@@ -94,11 +94,11 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
      * This method shifts the pointer the next position. Returns the current doc_id (positive)
      */
     IdType Next() {
-      post_pos_ ++;
-      if (post_pos_ >= post_->qty_) {
+      PostListQueryStateWAND::post_pos_ ++;
+      if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
         throw new std::length_error("the end of list");
       }
-      doc_id_ = post_->entries_[post_pos_].doc_id_;
+      doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
       return doc_id_;
     }
     /**
@@ -110,16 +110,16 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
         return true;
 
       size_t block_beginning = block_size_ * block_idx_;
-      if (block_beginning > post_pos_){
-        post_pos_ = block_beginning;
+      if (block_beginning > PostListQueryStateWAND::post_pos_){
+        PostListQueryStateWAND::post_pos_ = block_beginning;
       }
-      while (post_->entries_[post_pos_].doc_id_ < min_doc_id &&  ++ post_pos_ < post_->qty_) {
+      while (PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_ < min_doc_id &&  ++ PostListQueryStateWAND::post_pos_ < PostListQueryStateWAND::post_->qty_) {
         //post_pos_ ++;
       }
-      if (post_pos_ >= post_->qty_) {
+      if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
         throw new std::length_error("the end of list");
       }
-      doc_id_ = post_->entries_[post_pos_].doc_id_;
+      doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
       return doc_id_ == min_doc_id;
     }
 
@@ -137,7 +137,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
     }
 
     dist_t GetCurrentQueryVal() const {
-      return qval_ * post_->entries_[post_pos_].val_;
+      return PostListQueryStateWAND::qval_ * PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].val_;
     }
 
   };
