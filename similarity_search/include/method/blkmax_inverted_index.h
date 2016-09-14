@@ -87,7 +87,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
           blocks_(& blocks),
           block_size_(block_size),
           last_block_idx_(blocks.size()) {
-      doc_id_ = pl.entries_[post_pos_].doc_id_;
+      doc_id_ = pl.entries_[PostListQueryStateWAND::post_pos_].doc_id_;
     }
 
     /**
