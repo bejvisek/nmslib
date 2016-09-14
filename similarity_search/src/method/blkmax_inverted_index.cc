@@ -60,7 +60,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       CHECK(pl.qty_ > 0);
       ++wordQty;
       // initialize the queryStates[query_term_index]  to the first position in the posting list WAND
-      dist_t maxContrib = eQuery.val_ * max_contributions_.find(eQuery.id_)->second;
+      dist_t maxContrib = eQuery.val_ * WandInvIndex::max_contributions_.find(eQuery.id_)->second;
       queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_));
       // initialize the postListQueue to the first position - insert pair (-doc_id, query_term_index)
       postListQueue.push(-pl.entries_[0].doc_id_, qsi);
@@ -113,7 +113,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
     if (max_block_contrib_accum > queryThreshold) {
       // find new doc_id to shift all inspected lists (up to the pivot)
       IdType new_doc_id = postListQueue.top_key();
-      for (int j = 0; j < pivotIdx; ++j) {
+      for (int i = 0; i < pivotIdx; ++i) {
         try {
           if (someListEnded) {
             queryStates[lowest_doc_indexes[i]]->NextShallow(pivot_doc_id);
@@ -127,7 +127,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
         }
       }
       // shift pointers to the next id and re-insert them into the queue
-      for (int j = 0; j < pivotIdx; ++j) {
+      for (int i = 0; i < pivotIdx; ++i) {
         PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
         try {
           queryState.Next(new_doc_id);
@@ -138,7 +138,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       }
     } else { // we need to check the block maxima
       // make sure that all pointers point to doc_ids >= pivot_doc_id
-      for (int j = 0; j < pivotIdx; ++j) {
+      for (int i = 0; i < pivotIdx; ++i) {
         PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
         try {
           // if this posting list contains the pivot_doc_id
