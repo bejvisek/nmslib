@@ -96,26 +96,27 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       lowest_doc_indexes[pivotIdx++] = qsi;
       max_contrib_accum += queryStates[qsi]->max_term_contr_;
     }
-    IdType pivot_doc_id = -pivot_doc_id_neg;;
+    IdType pivot_doc_id = -pivot_doc_id_neg;
 
     // shift blocks, if necessary, and calculate max_block_contribution
     bool someListEnded = false;
     for (int i = 0; i < pivotIdx; ++i) {
       try {
-        max_block_contrib_accum += queryStates[lowest_doc_indexes[i]]->NextShallow(pivot_doc_id);
+        PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
+        max_block_contrib_accum += queryState.NextShallow(pivot_doc_id) * queryState.qval_;
       } catch (const std::length_error &e) {
         // if the shallow next reaches the end of the posting list, do not contribute to the accumulation
         someListEnded = true;
       }
     }
 
-    // if the sum of global maximums does not exccedd the threshold, we can shift all the pointers significantly
+    // if the sum of global maximums does not exceed the threshold, we just shift all the pointers significantly
     if (max_block_contrib_accum > queryThreshold) {
       // find new doc_id to shift all inspected lists (up to the pivot)
-      IdType new_doc_id = postListQueue.top_key();
+      IdType new_doc_id = postListQueue.empty() ? MAX_DATASET_QTY : postListQueue.top_key();
       for (int i = 0; i < pivotIdx; ++i) {
         try {
-          if (someListEnded) {
+          if (someListEnded) { // do the block shift once again, because the ended list will throw an exception
             queryStates[lowest_doc_indexes[i]]->NextShallow(pivot_doc_id);
           }
           IdType blockBoundaryPlusOne = blocks_[queryStates[lowest_doc_indexes[i]]->block_idx_].last_id + 1;
@@ -130,7 +131,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       for (int i = 0; i < pivotIdx; ++i) {
         PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
         try {
-          queryState.Next(new_doc_id);
+          queryState.Next(new_doc_id, true);
           postListQueue.push(-queryState.doc_id_, lowest_doc_indexes[i]);
         } catch (const std::length_error &e) {
           // if the shallow next reaches the end of the posting list, do not reinsert this list into the queue
@@ -142,7 +143,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
         PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
         try {
           // if this posting list contains the pivot_doc_id
-          if (queryState.Next(pivot_doc_id)) {
+          if (queryState.Next(pivot_doc_id, false)) {
             accum += queryState.GetCurrentQueryVal();
             postListQueue.push(-queryState.Next(), lowest_doc_indexes[i]);
           } else { // this means that the pointer in this posting list is larger than the pivot doc_id

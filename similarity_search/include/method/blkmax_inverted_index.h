@@ -86,7 +86,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
           block_idx_(0),
           blocks_(& blocks),
           block_size_(block_size),
-          last_block_idx_(blocks.size()) {
+          last_block_idx_(blocks.size() - 1) {
       doc_id_ = pl.entries_[PostListQueryStateWAND::post_pos_].doc_id_;
     }
 
@@ -101,13 +101,23 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
       doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
       return doc_id_;
     }
+
     /**
      * This method shifts the pointer to a position that has the doc_id at least the given argument. It
      *  assumes that the block_idx is already set alright
      */
-    bool Next(IdType min_doc_id) {
+    bool Next(IdType min_doc_id, const bool useBlocks) {
       if (doc_id_ == min_doc_id)
         return true;
+
+      if (useBlocks) {
+        while ((*blocks_)[block_idx_].last_id < min_doc_id ) {
+          if (block_idx_ >= last_block_idx_) {
+            throw std::length_error("the end of list");
+          }
+          block_idx_ ++;
+        }
+      }
 
       size_t block_beginning = block_size_ * block_idx_;
       if (block_beginning > PostListQueryStateWAND::post_pos_){
@@ -127,11 +137,11 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
      * This method shifts the block pointer to the block that might contain given ID and returns the max block contribution.
      */
     dist_t NextShallow(IdType doc_id) {
-      while ((*blocks_)[block_idx_].last_id < doc_id && block_idx_ < last_block_idx_) {
+      while ((*blocks_)[block_idx_].last_id < doc_id ) {
+        if (block_idx_ >= last_block_idx_) {
+          throw std::length_error("the end of list");
+        }
         block_idx_ ++;
-      }
-      if ((*blocks_)[block_idx_].last_id < doc_id && block_idx_ >= last_block_idx_) {
-        throw std::length_error("the end of list");
       }
       return (*blocks_)[block_idx_].max_val;
     }
