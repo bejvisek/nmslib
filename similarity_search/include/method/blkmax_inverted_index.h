@@ -1,0 +1,163 @@
+/**
+ * Non-metric Space Library
+ *
+ * Authors: Bilegsaikhan Naidan (https://github.com/bileg), Leonid Boytsov (http://boytsov.info).
+ * With contributions from Lawrence Cayton (http://lcayton.com/) and others.
+ *
+ * For the complete list of contributors and further details see:
+ * https://github.com/searchivarius/NonMetricSpaceLib 
+ * 
+ * Copyright (c) 2016
+ *
+ * This code is released under the
+ * Apache License Version 2.0 http://www.apache.org/licenses/.
+ *
+ */
+#ifndef _BLKMAX_INV_INDEX_H_
+#define _BLKMAX_INV_INDEX_H_
+
+#include "wand_inverted_index.h"
+#include <stdexcept>
+
+#define METH_BLKMAX_INV_INDEX             "blkmax_invindx"
+
+#define PARAM_BLOCK_SIZE                  "blk_size"
+#define PARAM_BLOCK_SIZE_DEFAULT          64
+
+namespace similarity {
+
+using std::string;
+
+template <typename dist_t>
+class BlockMaxInvIndex : public WandInvIndex<dist_t> {
+ public:
+  BlockMaxInvIndex(Space<dist_t>& space,
+              const ObjectVector& data) : WandInvIndex<dist_t>(space, data) {
+  }
+
+  void CreateIndex(const AnyParams& IndexParams) override; 
+
+  void SetQueryTimeParams(const AnyParams& QueryTimeParams) override;
+
+  ~BlockMaxInvIndex() override;
+
+  void Search(KNNQuery<dist_t>* query, IdType) const override;
+
+
+  const string StrDesc() const override {
+    return METH_WAND_INV_INDEX;
+  }
+
+ protected:
+
+  typedef typename SimplInvIndex<dist_t>::PostList PostList;
+  typedef typename SimplInvIndex<dist_t>::PostEntry PostEntry;
+  typedef typename WandInvIndex<dist_t>::PostListQueryStateWAND PostListQueryStateWAND;
+
+  // record with information about a block of entries in the inverted list
+  struct BlockInfo {
+    // last doc_id in the block
+    const IdType last_id;
+    // maximum value of all records in the block
+    const dist_t max_val;
+
+    BlockInfo(const IdType last_id_param, const dist_t max_val_param)
+        : last_id(last_id_param), max_val(max_val_param) {}
+  };
+
+  /**
+   * A structure that keeps information about current state of search within one posting list (for WAND).
+   */
+  struct PostListQueryStateBlock : PostListQueryStateWAND {
+    // the index of current block
+    size_t  block_idx_;
+    // current doc_id for easier manipulation
+    IdType  doc_id_;
+
+    // block size (number of entries in one block)
+    const int block_size_;
+    // list of records with information about individual blocks
+    const vector<BlockInfo> * blocks_;
+    // number of blocks - 1
+    const int last_block_idx_;
+
+    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo> & blocks)
+        : PostListQueryStateWAND(pl, qval, max_term_contr),
+          block_idx_(0),
+          blocks_(& blocks),
+          block_size_(block_size),
+          last_block_idx_(blocks.size()) {
+      doc_id_ = pl.entries_[post_pos_].doc_id_;
+    }
+
+    /**
+     * This method shifts the pointer the next position. Returns the current doc_id (positive)
+     */
+    IdType Next() {
+      post_pos_ ++;
+      if (post_pos_ >= post_->qty_) {
+        throw new std::length_error("the end of list");
+      }
+      doc_id_ = post_->entries_[post_pos_].doc_id_;
+      return doc_id_;
+    }
+    /**
+     * This method shifts the pointer to a position that has the doc_id at least the given argument. It
+     *  assumes that the block_idx is already set alright
+     */
+    bool Next(IdType min_doc_id) {
+      if (doc_id_ == min_doc_id)
+        return true;
+
+      size_t block_beginning = block_size_ * block_idx_;
+      if (block_beginning > post_pos_){
+        post_pos_ = block_beginning;
+      }
+      while (post_->entries_[post_pos_].doc_id_ < min_doc_id &&  ++ post_pos_ < post_->qty_) {
+        //post_pos_ ++;
+      }
+      if (post_pos_ >= post_->qty_) {
+        throw new std::length_error("the end of list");
+      }
+      doc_id_ = post_->entries_[post_pos_].doc_id_;
+      return doc_id_ == min_doc_id;
+    }
+
+    /**
+     * This method shifts the block pointer to the block that might contain given ID and returns the max block contribution.
+     */
+    dist_t NextShallow(IdType doc_id) {
+      while ((*blocks_)[block_idx_].last_id < doc_id && block_idx_ < last_block_idx_) {
+        block_idx_ ++;
+      }
+      if ((*blocks_)[block_idx_].last_id < doc_id && block_idx_ >= last_block_idx_) {
+        throw std::length_error("the end of list");
+      }
+      return (*blocks_)[block_idx_].max_val;
+    }
+
+    dist_t GetCurrentQueryVal() const {
+      return qval_ * post_->entries_[post_pos_].val_;
+    }
+
+  };
+
+  // block size (number of entries in one block)
+  int block_size_;
+
+  // list of records with information about individual blocks
+  vector<BlockInfo> blocks_;
+
+
+private:
+  void Next(PostListQueryStateBlock state, IdType min_doc_id_neg);
+
+
+
+    // disable copy and assign
+  DISABLE_COPY_AND_ASSIGN(BlockMaxInvIndex);
+};
+
+}   // namespace similarity
+
+#endif     // _WAND_INV_INDEX_H_
