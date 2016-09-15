@@ -141,7 +141,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       // shift pointers to the next id and re-insert them into the queue
       for (int i = 0; i < pivotIdx; ++i) {
         LOG(LIB_INFO) << "\t\t\tlowest_doc_indexes[i]: " << lowest_doc_indexes[i];
-        LOG(LIB_INFO) << "\t\t\tqueryStates[lowest_doc_indexes[i]]" << queryStates[lowest_doc_indexes[i]];
+        LOG(LIB_INFO) << "\t\t\tqueryStates[lowest_doc_indexes[i]] - is null: " << (queryStates[lowest_doc_indexes[i]] == NULL);
         PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
         try {
           queryState.Next(new_doc_id, true);
