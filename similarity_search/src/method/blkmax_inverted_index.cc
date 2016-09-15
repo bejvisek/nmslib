@@ -64,7 +64,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       dist_t maxContrib = eQuery.val_ * WandInvIndex<dist_t>::max_contributions_.find(eQuery.id_)->second;
       queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_));
       // initialize the postListQueue to the first position - insert pair (-doc_id, query_term_index)
-      postListQueue.push(-pl.entries_[0].doc_id_, qsi);
+      postListQueue.push(-queryStates[qsi]->doc_id_, qsi);
     }
     ++qsi;
   }
@@ -89,17 +89,19 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   int pivotIdx = 0;
   IdType pivot_doc_id_neg = 1;
 
-  LOG(LIB_INFO) << "\tinitialization OK";
+  LOG(LIB_INFO) << "\tinitialization OK, # of query terms " << wordQty;
   while (!postListQueue.empty()) {
     // find the WAND-like pivot (in case of having IDs like (3, 5, 7, 7, 8) and in case sum of max
+    string top_id_str = "(";
     while (!postListQueue.empty() &&
            (max_contrib_accum <= queryThreshold || pivot_doc_id_neg == postListQueue.top_key())) {
       postListQueue.extract_top(pivot_doc_id_neg, qsi);
       lowest_doc_indexes[pivotIdx++] = qsi;
       max_contrib_accum += queryStates[qsi]->max_term_contr_;
+      top_id_str += (- pivot_doc_id_neg) + ", ";
     }
     IdType pivot_doc_id = -pivot_doc_id_neg;
-    LOG(LIB_INFO) << "\tpivot index " << pivotIdx << ", pivot doc id " << pivot_doc_id;
+    LOG(LIB_INFO) << "\ttop doc_ids: " << top_id_str << ") " << "\tpivot index " << pivotIdx << ", pivot doc id " << pivot_doc_id;
 
     // shift blocks, if necessary, and calculate max_block_contribution
     bool someListEnded = false;
@@ -113,9 +115,10 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
         someListEnded = true;
       }
     }
+    LOG(LIB_INFO) << "\t\tmax contribution: " << max_contrib_accum << ", max block contrib: " << max_block_contrib_accum << "(threshold " << queryThreshold << ")"
 
     // if the sum of global maximums does not exceed the threshold, we just shift all the pointers significantly
-    if (max_block_contrib_accum > queryThreshold) {
+    if (max_block_contrib_accum <= queryThreshold) {
       // find new doc_id to shift all inspected lists (up to the pivot)
       IdType new_doc_id = postListQueue.empty() ? MAX_DATASET_QTY : postListQueue.top_key();
       for (int i = 0; i < pivotIdx; ++i) {
