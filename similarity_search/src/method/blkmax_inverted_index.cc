@@ -120,7 +120,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
         someListEnded = true;
       }
     }
-    LOG(LIB_INFO) << "\t\tmax contribution: " << max_contrib_accum << ", max block contrib: " << max_block_contrib_accum << " (threshold " << queryThreshold << ")";
+//    LOG(LIB_INFO) << "\t\tmax contribution: " << max_contrib_accum << ", max block contrib: " << max_block_contrib_accum << " (threshold " << queryThreshold << ")";
 
     // if the sum of the block maximums does not exceed the threshold, we just shift all the pointers significantly
     if (max_block_contrib_accum <= queryThreshold) {
