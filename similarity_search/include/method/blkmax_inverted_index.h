@@ -147,8 +147,6 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
         LOG(LIB_INFO) << "\t\t\tNext() is shifting to position " << PostListQueryStateWAND::post_pos_ <<
         " and doc_id " << doc_id_;
         return doc_id_ == min_doc_id;
-      } catch (const std::exception &e) {
-        LOG(LIB_INFO) << "\t\t\tNext() generated exception: " << e.what();
       } catch (const std::length_error &e) {
         LOG(LIB_INFO) << "\t\t\tNext() generated length exception: " << e.what();
       } catch (...) {
