@@ -207,7 +207,7 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
         termMax = entries[i].val_;
       }
       // if we are ending a block
-      if (i + 1 % block_size_ == 0) {
+      if ((i + 1) % block_size_ == 0) {
         const BlockInfo * blockInfo = new BlockInfo(entries[i].doc_id_, termMax);
         blocks_.push_back(*blockInfo);
         termMax = 0;
