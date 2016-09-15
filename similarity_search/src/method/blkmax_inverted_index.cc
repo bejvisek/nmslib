@@ -220,9 +220,9 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
   WandInvIndex<dist_t>::CreateIndex(pmgr);
 
   LOG(LIB_INFO) << "creating blocks";
-  string entryString = "[";
-  string blockString = "[";
   for (const auto& dictEntry : SimplInvIndex<dist_t>::index_) {
+    string entryString = "[";
+    string blockString = "[";
     unsigned qty = dictEntry.second->qty_;
     PostEntry * entries = dictEntry.second->entries_;
     dist_t termMax = 0;
