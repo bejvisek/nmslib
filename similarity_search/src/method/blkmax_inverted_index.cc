@@ -184,8 +184,10 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
     max_block_contrib_accum = 0;
     pivotIdx = 0;
     pivot_doc_id_neg = 1;
+    LOG(LIB_INFO) << "\t\tEnd of loop, size of post list queue: " << postListQueue.size();
   }
 
+  LOG(LIB_INFO) << "\tOut of the main loop";
   while (!tmpResQueue.empty()) {
 #ifdef SANITY_CHECKS
     CHECK(tmpResQueue.top_data() >= 0);
