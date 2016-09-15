@@ -93,11 +93,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
           last_block_idx_(blocks_.size() - 1),
           queryTermId_(queryTermId) {
       doc_id_ = pl.entries_[PostListQueryStateWAND::post_pos_].doc_id_;
-      try {
-        blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
-      } catch (const std::exception &e) {
-        LOG(LIB_INFO) << "\t\tstate init threw exception: " << e.what();
-      }
+      blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
     }
 
     /**
