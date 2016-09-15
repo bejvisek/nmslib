@@ -96,7 +96,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
     IdType Next() {
       PostListQueryStateWAND::post_pos_ ++;
       if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
-        throw new std::length_error("the end of list");
+        throw std::length_error("the end of list");
       }
       doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
       return doc_id_;
@@ -107,52 +107,40 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
      *  assumes that the block_idx is already set alright
      */
     bool Next(IdType min_doc_id, const bool useBlocks) {
-      try {
-        if (doc_id_ == min_doc_id)
-          return true;
+      if (doc_id_ == min_doc_id)
+        return true;
 
-        try {
-        if (useBlocks) {
-          while ((*blocks_)[block_idx_].last_id < min_doc_id) {
-            if (block_idx_ >= last_block_idx_) {
-              LOG(LIB_INFO) << " throwing length_error in block++";
-              throw std::length_error("the end of list");
-            }
-            block_idx_++;
+      if (useBlocks) {
+        while ((*blocks_)[block_idx_].last_id < min_doc_id) {
+          if (block_idx_ >= last_block_idx_) {
+            LOG(LIB_INFO) << " throwing length_error in block++";
+            throw std::length_error("the end of list");
           }
+          block_idx_++;
         }
-        } catch (...) {
-          LOG(LIB_INFO) << " catching something (in Next - useBlocks)" << min_doc_id << ", " << block_idx_ << ", " << (*blocks_)[block_idx_].last_id << ", " << last_block_idx_;
-          exit(1);
-        }
+      }
 
-        size_t block_beginning = block_size_ * block_idx_;
-        if (block_beginning > PostListQueryStateWAND::post_pos_) {
-          PostListQueryStateWAND::post_pos_ = block_beginning;
-        }
-        try {
-        while (PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_ < min_doc_id &&
-               ++PostListQueryStateWAND::post_pos_ < PostListQueryStateWAND::post_->qty_) {
-          //post_pos_ ++;
-        }
-        } catch (...) {
-          LOG(LIB_INFO) << " catching something (in Next - post_pos_ ++)" << min_doc_id << ", " << PostListQueryStateWAND::post_pos_ << ", " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
-          exit(1);
-        }
-        if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
-          LOG(LIB_INFO) << " throwing length_error in post_post++";
-          throw new std::length_error("the end of list");
-        }
-        doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
-        LOG(LIB_INFO) << "\t\t\tNext() is shifting to position " << PostListQueryStateWAND::post_pos_ <<
-        " and doc_id " << doc_id_;
-        return doc_id_ == min_doc_id;
-      } catch (const std::length_error &e) {
-        LOG(LIB_INFO) << "\t\t\tNext() generated length exception: " << e.what();
+      size_t block_beginning = block_size_ * block_idx_;
+      if (block_beginning > PostListQueryStateWAND::post_pos_) {
+        PostListQueryStateWAND::post_pos_ = block_beginning;
+      }
+      try {
+      while (PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_ < min_doc_id &&
+             ++PostListQueryStateWAND::post_pos_ < PostListQueryStateWAND::post_->qty_) {
+        //post_pos_ ++;
+      }
       } catch (...) {
-        LOG(LIB_INFO) << " catching something (in Next)";
+        LOG(LIB_INFO) << " catching something (in Next - post_pos_ ++)" << min_doc_id << ", " << PostListQueryStateWAND::post_pos_ << ", " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
         exit(1);
       }
+      if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
+        LOG(LIB_INFO) << " throwing length_error in post_post++";
+        throw std::length_error("the end of list");
+      }
+      doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
+      LOG(LIB_INFO) << "\t\t\tNext() is shifting to position " << PostListQueryStateWAND::post_pos_ <<
+      " and doc_id " << doc_id_;
+      return doc_id_ == min_doc_id;
     }
 
     /**
