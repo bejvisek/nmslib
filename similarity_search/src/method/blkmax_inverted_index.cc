@@ -121,7 +121,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
     // if the sum of the block maximums does not exceed the threshold, we just shift all the pointers significantly
     if (max_block_contrib_accum <= queryThreshold) {
       // find new doc_id to shift all inspected lists (up to the pivot)
-      IdType new_doc_id = postListQueue.empty() ? MAX_DATASET_QTY : postListQueue.top_key();
+      IdType new_doc_id = postListQueue.empty() ? MAX_DATASET_QTY : - postListQueue.top_key();
       for (int i = 0; i < pivotIdx; ++i) {
         try {
           if (someListEnded) { // do the block shift once again, because the ended list will throw an exception
