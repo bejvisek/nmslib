@@ -160,6 +160,14 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
         block_idx_ ++;
         blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
       }
+      // sanity check
+      if (Next(doc_id, false)) {
+        if (GetCurrentQueryVal() > blk_max_qval_) {
+          LOG(LIB_INFO) << "ERROR: query-multiplied value of doc_id " << doc_id << " is " << to_string(GetCurrentQueryVal()) << ", but max of "
+              << to_string(block_idx_) << "th block (" << to_string(blocks_[block_idx_]->last_id) << ") is " << blk_max_qval_;
+        }
+      }
+
       return blk_max_qval_;
     }
 
@@ -175,11 +183,8 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
   // list of records with information about individual blocks
   vector<BlockInfo *> blocks_;
 
-
 private:
   void Next(PostListQueryStateBlock state, IdType min_doc_id_neg);
-
-
 
     // disable copy and assign
   DISABLE_COPY_AND_ASSIGN(BlockMaxInvIndex);
