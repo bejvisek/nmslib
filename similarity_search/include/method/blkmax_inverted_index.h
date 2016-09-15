@@ -149,6 +149,8 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
         return doc_id_ == min_doc_id;
       } catch (const std::exception &e) {
         LOG(LIB_INFO) << "\t\t\tNext() generated exception: " << e.what();
+      } catch (const std::length_error &e) {
+        LOG(LIB_INFO) << "\t\t\tNext() generated length exception: " << e.what();
       } catch (...) {
         LOG(LIB_INFO) << " catching something (in Next)";
         exit(1);
