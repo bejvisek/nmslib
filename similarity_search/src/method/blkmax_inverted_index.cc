@@ -201,7 +201,9 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   }
   } catch (const std::exception &e) {
     LOG(LIB_INFO) << "\t\t\tNext() generated exception: " << e.what();
-  }   
+  } catch (...) {
+    LOG(LIB_INFO) << " catching something";
+  }
 }
 
 template <typename dist_t>
