@@ -146,7 +146,8 @@ void WandInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
 
 template <typename dist_t>
 void WandInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
-  SimplInvIndex<dist_t>::CreateIndex(IndexParams);
+  AnyParamManager pmgr(IndexParams);
+  CreateIndex(pmgr);
 }
 
 template <typename dist_t>
