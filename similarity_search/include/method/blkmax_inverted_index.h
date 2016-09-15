@@ -166,7 +166,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
       // sanity check
       if (Next(doc_id, false)) {
         if (GetCurrentQueryVal() > blk_max_qval_) {
-          LOG(LIB_INFO) << "ERROR: " << "query term id: " << queryTermId_ << ": query-multiplied value of doc_id " << doc_id << " on position " << post_pos_ << " is "
+          LOG(LIB_INFO) << "ERROR: " << "query term id: " << queryTermId_ << ": query-multiplied value of doc_id " << doc_id << " on position " << PostListQueryStateWAND::post_pos_ << " is "
               << PostListQueryStateWAND::qval_ << " * " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].val_ << " = "  << GetCurrentQueryVal() << ", but max of "
               << block_idx_ << "th block (" << blocks_[block_idx_]->last_id << ") is "
               << blocks_[block_idx_]->max_val << " * " << PostListQueryStateWAND::qval_ << " = " << blk_max_qval_;
