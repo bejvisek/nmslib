@@ -63,7 +63,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       ++wordQty;
       // initialize the queryStates[query_term_index]  to the first position in the posting list WAND
       dist_t maxContrib = eQuery.val_ * WandInvIndex<dist_t>::max_contributions_.find(eQuery.id_)->second;
-      queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_));
+      queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_, eQuery.id_));
       // initialize the postListQueue to the first position - insert pair (-doc_id, query_term_index)
       postListQueue.push(-queryStates[qsi]->doc_id_, qsi);
     }
@@ -221,7 +221,7 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
 
   LOG(LIB_INFO) << "creating blocks";
   for (const auto& dictEntry : SimplInvIndex<dist_t>::index_) {
-    string entryString = "[";
+    string entryString = "list " + to_string(dictEntry.first) + " [";
     string blockString = "[";
     unsigned qty = dictEntry.second->qty_;
     PostEntry * entries = dictEntry.second->entries_;

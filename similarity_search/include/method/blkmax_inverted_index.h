@@ -83,12 +83,15 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
     // precomputed product of block_max and query_val
     dist_t blk_max_qval_;
 
-    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo *> blocks)
+    uint32_t queryTermId_;
+
+    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo *> blocks, uint32_t queryTermId)
         : PostListQueryStateWAND(pl, qval, max_term_contr),
           block_idx_(0),
           blocks_(blocks),
           block_size_(block_size),
-          last_block_idx_(blocks_.size() - 1) {
+          last_block_idx_(blocks_.size() - 1),
+          queryTermId_(queryTermId) {
       doc_id_ = pl.entries_[PostListQueryStateWAND::post_pos_].doc_id_;
       blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
     }
@@ -163,8 +166,10 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
       // sanity check
       if (Next(doc_id, false)) {
         if (GetCurrentQueryVal() > blk_max_qval_) {
-          LOG(LIB_INFO) << "ERROR: query-multiplied value of doc_id " << doc_id << " is " << to_string(GetCurrentQueryVal()) << ", but max of "
-              << to_string(block_idx_) << "th block (" << to_string(blocks_[block_idx_]->last_id) << ") is " << blk_max_qval_;
+          LOG(LIB_INFO) << "ERROR: " << "query term id: " << queryTermId_ << ": query-multiplied value of doc_id " << doc_id << " on position " << post_pos_ << " is "
+              << PostListQueryStateWAND::qval_ << " * " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].val_ << " = "  << GetCurrentQueryVal() << ", but max of "
+              << block_idx_ << "th block (" << blocks_[block_idx_]->last_id << ") is "
+              << blocks_[block_idx_]->max_val << " * " << PostListQueryStateWAND::qval_ << " = " << blk_max_qval_;
         }
       }
 
