@@ -85,10 +85,10 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
 
     uint32_t queryTermId_;
 
-    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo *> * blocks, uint32_t queryTermId)
+    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo *> & blocks, uint32_t queryTermId)
         : PostListQueryStateWAND(pl, qval, max_term_contr),
           block_idx_(0),
-          blocks_(*blocks),
+          blocks_(blocks),
           block_size_(block_size),
           last_block_idx_(blocks_.size() - 1),
           queryTermId_(queryTermId) {
