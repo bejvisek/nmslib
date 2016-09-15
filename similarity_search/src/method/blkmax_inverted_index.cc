@@ -64,6 +64,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       // initialize the queryStates[query_term_index]  to the first position in the posting list WAND
       dist_t maxContrib = eQuery.val_ * WandInvIndex<dist_t>::max_contributions_.find(eQuery.id_)->second;
 
+      // the list of blocks for given posting list
       vector<BlockInfo *> & blocks_ = *(blocks_map_.find(eQuery.id_)->second);
       queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_, eQuery.id_));
 
