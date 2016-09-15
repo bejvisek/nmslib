@@ -85,10 +85,10 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
 
     uint32_t queryTermId_;
 
-    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo *> blocks, uint32_t queryTermId)
+    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo *> * blocks, uint32_t queryTermId)
         : PostListQueryStateWAND(pl, qval, max_term_contr),
           block_idx_(0),
-          blocks_(blocks),
+          blocks_(*blocks),
           block_size_(block_size),
           last_block_idx_(blocks_.size() - 1),
           queryTermId_(queryTermId) {
@@ -169,7 +169,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
           LOG(LIB_INFO) << "ERROR: " << "query term id: " << queryTermId_ << ": query-multiplied value of doc_id " << doc_id << " on position " << PostListQueryStateWAND::post_pos_ << " is "
               << PostListQueryStateWAND::qval_ << " * " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].val_ << " = "  << GetCurrentQueryVal() << ", but max of "
               << block_idx_ << "th block (" << blocks_[block_idx_]->last_id << ") is "
-              << blocks_[block_idx_]->max_val << " * " << PostListQueryStateWAND::qval_ << " = " << blk_max_qval_;
+              << PostListQueryStateWAND::qval_ << " * " << blocks_[block_idx_]->max_val << " = " << blk_max_qval_;
         }
       }
 
@@ -180,13 +180,18 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
       return PostListQueryStateWAND::qval_ * PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].val_;
     }
 
+    IdType getBlockLastId() const {
+      return blocks_[block_idx_]->last_id;
+    }
+
+
   };
 
   // block size (number of entries in one block)
   int block_size_;
 
   // list of records with information about individual blocks
-  vector<BlockInfo *> blocks_;
+  std::unordered_map<unsigned, vector<BlockInfo *> *> blocks_map_;
 
 private:
   void Next(PostListQueryStateBlock state, IdType min_doc_id_neg);

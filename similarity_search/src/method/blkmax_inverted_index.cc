@@ -63,7 +63,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       ++wordQty;
       // initialize the queryStates[query_term_index]  to the first position in the posting list WAND
       dist_t maxContrib = eQuery.val_ * WandInvIndex<dist_t>::max_contributions_.find(eQuery.id_)->second;
-      queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_, eQuery.id_));
+      queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_map_.find(eQuery.id_)->second, eQuery.id_));
       // initialize the postListQueue to the first position - insert pair (-doc_id, query_term_index)
       postListQueue.push(-queryStates[qsi]->doc_id_, qsi);
     }
@@ -128,7 +128,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
           if (someListEnded) { // do the block shift once again, because the ended list will throw an exception
             queryStates[lowest_doc_indexes[i]]->NextShallow(pivot_doc_id);
           }
-          IdType blockBoundaryPlusOne = (blocks_[queryStates[lowest_doc_indexes[i]]->block_idx_])->last_id + 1;
+          IdType blockBoundaryPlusOne = queryStates[lowest_doc_indexes[i]]->getBlockLastId() + 1;
           if (new_doc_id > blockBoundaryPlusOne) {
             new_doc_id = blockBoundaryPlusOne;
           }
@@ -221,6 +221,7 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
 
   LOG(LIB_INFO) << "creating blocks";
   for (const auto& dictEntry : SimplInvIndex<dist_t>::index_) {
+    vector<BlockInfo * > blocks;
     string entryString = "list " + to_string(dictEntry.first) + " [";
     string blockString = "[";
     unsigned qty = dictEntry.second->qty_;
@@ -234,19 +235,21 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
       entryString += "(" + to_string(entries[i].doc_id_) + " " + to_string(entries[i].val_) + ") ";
       // if we are ending a block
       if ((i + 1) % block_size_ == 0) {
-        blocks_.push_back(new BlockInfo(entries[i].doc_id_, termMax));
+        blocks.push_back(new BlockInfo(entries[i].doc_id_, termMax));
         termMax = 0;
         entryString += "], [";
-        blockString += to_string(blocks_[blocks_.size() - 1]->last_id) + " " + to_string(blocks_[blocks_.size() - 1]->max_val) + "], [";
+        blockString += to_string(blocks[blocks.size() - 1]->last_id) + " " + to_string(blocks[blocks.size() - 1]->max_val) + "], [";
       }
     }
     // the last block
     if (qty % block_size_ != 0) {
-      blocks_.push_back(new BlockInfo(entries[qty - 1].doc_id_, termMax));
-      blockString += to_string(blocks_[blocks_.size() - 1]->last_id) + " " + to_string(blocks_[blocks_.size() - 1]->max_val) + "]";
+      blocks.push_back(new BlockInfo(entries[qty - 1].doc_id_, termMax));
+      blockString += to_string(blocks[blocks.size() - 1]->last_id) + " " + to_string(blocks[blocks.size() - 1]->max_val) + "]";
     }
     LOG(LIB_INFO) << entryString;
     LOG(LIB_INFO) << blockString;
+
+    blocks_map_.insert(make_pair(dictEntry.first, & blocks));
   }
 }
 
