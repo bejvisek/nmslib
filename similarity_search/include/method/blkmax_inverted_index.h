@@ -120,20 +120,21 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
           block_idx_++;
         }
       }
+      LOG(LIB_INFO) << "\t\t\t\t\tafter useBlocks";
 
       size_t block_beginning = block_size_ * block_idx_;
       if (block_beginning > PostListQueryStateWAND::post_pos_) {
         PostListQueryStateWAND::post_pos_ = block_beginning;
+        if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
+          LOG(LIB_INFO) << " throwing length_error in post_post++";
+          throw std::length_error("the end of list");
+        }
       }
-      try {
       while (PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_ < min_doc_id &&
              ++PostListQueryStateWAND::post_pos_ < PostListQueryStateWAND::post_->qty_) {
         //post_pos_ ++;
       }
-      } catch (...) {
-        LOG(LIB_INFO) << " catching something (in Next - post_pos_ ++)" << min_doc_id << ", " << PostListQueryStateWAND::post_pos_ << ", " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
-        exit(1);
-      }
+      LOG(LIB_INFO) << "\t\t\t\t\tafter post_pos++";
       if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
         LOG(LIB_INFO) << " throwing length_error in post_post++";
         throw std::length_error("the end of list");
