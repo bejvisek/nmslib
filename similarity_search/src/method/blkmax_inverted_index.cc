@@ -98,7 +98,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       postListQueue.extract_top(pivot_doc_id_neg, qsi);
       lowest_doc_indexes[pivotIdx++] = qsi;
       max_contrib_accum += queryStates[qsi]->max_term_contr_;
-      top_id_str += (- pivot_doc_id_neg) + ", ";
+      top_id_str += to_string(- pivot_doc_id_neg) + ", ";
     }
     IdType pivot_doc_id = -pivot_doc_id_neg;
     LOG(LIB_INFO) << "\ttop doc_ids: " << top_id_str << ") " << "\tpivot index " << pivotIdx << ", pivot doc id " << pivot_doc_id;
