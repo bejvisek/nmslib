@@ -139,6 +139,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
         LOG(LIB_INFO) << "\t\t\tNext() generated exception: " << e.what();
       } catch (...) {
         LOG(LIB_INFO) << " catching something (in Next)";
+      }
     }
 
     /**
