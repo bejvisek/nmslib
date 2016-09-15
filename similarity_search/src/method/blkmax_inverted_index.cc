@@ -32,6 +32,7 @@ using namespace std;
 
 template <typename dist_t>
 void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
+  LOG(LIB_INFO) << "Starting new kNN query";
   // the query vector, its size is the number of query terms (non-zero dimensions of the query vector)
   vector<SparseVectElem<dist_t>>    query_vect;
   const Object* o = query->QueryObject();
@@ -88,6 +89,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   int pivotIdx = 0;
   IdType pivot_doc_id_neg = 1;
 
+  LOG(LIB_INFO) << "\tinitialization OK";
   while (!postListQueue.empty()) {
     // find the WAND-like pivot (in case of having IDs like (3, 5, 7, 7, 8) and in case sum of max
     while (!postListQueue.empty() &&
@@ -97,6 +99,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       max_contrib_accum += queryStates[qsi]->max_term_contr_;
     }
     IdType pivot_doc_id = -pivot_doc_id_neg;
+    LOG(LIB_INFO) << "\tpivot index " << pivotIdx << ", pivot doc id " << pivot_doc_id;
 
     // shift blocks, if necessary, and calculate max_block_contribution
     bool someListEnded = false;
@@ -106,6 +109,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
         max_block_contrib_accum += queryState.NextShallow(pivot_doc_id) * queryState.qval_;
       } catch (const std::length_error &e) {
         // if the shallow next reaches the end of the posting list, do not contribute to the accumulation
+        LOG(LIB_INFO) << "\tsome list ended";
         someListEnded = true;
       }
     }
@@ -125,6 +129,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
           }
         } catch (const std::length_error &e) {
           // skip the post list that ended
+          LOG(LIB_INFO) << "\tNextShallow throws exception";
         }
       }
       // shift pointers to the next id and re-insert them into the queue
@@ -135,6 +140,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
           postListQueue.push(-queryState.doc_id_, lowest_doc_indexes[i]);
         } catch (const std::length_error &e) {
           // if the shallow next reaches the end of the posting list, do not reinsert this list into the queue
+          LOG(LIB_INFO) << "\tNext throws exception";
         }
       }
     } else { // we need to check the block maxima
@@ -151,6 +157,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
           }
         } catch (const std::length_error &e) {
           // if the shallow next reaches the end of the posting list, do not reinsert this list into the queue
+          LOG(LIB_INFO) << "\tNext throws exception";
         }
       }
 
