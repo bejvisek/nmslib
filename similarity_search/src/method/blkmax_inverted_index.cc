@@ -63,7 +63,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       ++wordQty;
       // initialize the queryStates[query_term_index]  to the first position in the posting list WAND
       dist_t maxContrib = eQuery.val_ * WandInvIndex<dist_t>::max_contributions_.find(eQuery.id_)->second;
-      queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_map_.find(eQuery.id_)->second, eQuery.id_));
+      queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, (blocks_map_.find(eQuery.id_)->second).get(), eQuery.id_));
       // initialize the postListQueue to the first position - insert pair (-doc_id, query_term_index)
       postListQueue.push(-queryStates[qsi]->doc_id_, qsi);
     }
@@ -204,7 +204,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
     tmpResQueue.pop();
   }
   } catch (const std::exception &e) {
-    LOG(LIB_INFO) << "\t\t\tNext() generated exception: " << e.what();
+    LOG(LIB_INFO) << "\t\t\tthe processing threw exception: " << e.what();
   } catch (...) {
     LOG(LIB_INFO) << " catching something";
   }
@@ -221,7 +221,7 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
 
   LOG(LIB_INFO) << "creating blocks";
   for (const auto& dictEntry : SimplInvIndex<dist_t>::index_) {
-    vector<BlockInfo * > blocks;
+    vector<BlockInfo * > blocks = *new vector<BlockInfo * >();
     string entryString = "list " + to_string(dictEntry.first) + " [";
     string blockString = "[";
     unsigned qty = dictEntry.second->qty_;
@@ -249,7 +249,7 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
     LOG(LIB_INFO) << entryString;
     LOG(LIB_INFO) << blockString;
 
-    blocks_map_.insert(make_pair(dictEntry.first, & blocks));
+    blocks_map_.insert(make_pair(dictEntry.first, unique_ptr<vector<BlockInfo * >>( & blocks)));
   }
 }
 

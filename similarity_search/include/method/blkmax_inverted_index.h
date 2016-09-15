@@ -191,7 +191,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
   int block_size_;
 
   // list of records with information about individual blocks
-  std::unordered_map<unsigned, vector<BlockInfo *> *> blocks_map_;
+  std::unordered_map<unsigned, std::unique_ptr<vector<BlockInfo *>>> blocks_map_;
 
 private:
   void Next(PostListQueryStateBlock state, IdType min_doc_id_neg);
