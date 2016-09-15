@@ -128,7 +128,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
           if (someListEnded) { // do the block shift once again, because the ended list will throw an exception
             queryStates[lowest_doc_indexes[i]]->NextShallow(pivot_doc_id);
           }
-          IdType blockBoundaryPlusOne = blocks_[queryStates[lowest_doc_indexes[i]]->block_idx_].last_id + 1;
+          IdType blockBoundaryPlusOne = (blocks_[queryStates[lowest_doc_indexes[i]]->block_idx_])->last_id + 1;
           if (new_doc_id > blockBoundaryPlusOne) {
             new_doc_id = blockBoundaryPlusOne;
           }
@@ -230,14 +230,14 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
       }
       // if we are ending a block
       if ((i + 1) % block_size_ == 0) {
-        const BlockInfo * blockInfo = new BlockInfo(entries[i].doc_id_, termMax);
-        blocks_.push_back(*blockInfo);
+        BlockInfo * blockInfo = new BlockInfo(entries[i].doc_id_, termMax);
+        blocks_.push_back(blockInfo);
         termMax = 0;
       }
     }
     // the last block
     if (qty % block_size_ != 0) {
-      blocks_.push_back(* (new BlockInfo(entries[qty - 1].doc_id_, termMax)));
+      blocks_.push_back(new BlockInfo(entries[qty - 1].doc_id_, termMax));
     }
   }
 }

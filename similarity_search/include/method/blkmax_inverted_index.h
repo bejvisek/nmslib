@@ -77,20 +77,20 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
     // block size (number of entries in one block)
     const int block_size_;
     // list of records with information about individual blocks
-    const vector<BlockInfo> * blocks_;
+    const vector<BlockInfo *> blocks_;
     // number of blocks - 1
     const int last_block_idx_;
     // precomputed product of block_max and query_val
     dist_t blk_max_qval_;
 
-    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo> & blocks)
+    PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo *> blocks)
         : PostListQueryStateWAND(pl, qval, max_term_contr),
           block_idx_(0),
-          blocks_(& blocks),
+          blocks_(blocks),
           block_size_(block_size),
-          last_block_idx_(blocks.size() - 1) {
+          last_block_idx_(blocks_.size() - 1) {
       doc_id_ = pl.entries_[PostListQueryStateWAND::post_pos_].doc_id_;
-      blk_max_qval_ = (*blocks_)[block_idx_].max_val * PostListQueryStateWAND::qval_;
+      blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
     }
 
     /**
@@ -115,13 +115,13 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
         return true;
 
       if (useBlocks) {
-        while ((*blocks_)[block_idx_].last_id < min_doc_id) {
+        while (blocks_[block_idx_]->last_id < min_doc_id) {
           if (block_idx_ >= last_block_idx_) {
             LOG(LIB_INFO) << " throwing length_error in block++";
             throw std::length_error("the end of list");
           }
           block_idx_++;
-          blk_max_qval_ = (*blocks_)[block_idx_].max_val * PostListQueryStateWAND::qval_;
+          blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
         }
       }
       LOG(LIB_INFO) << "\t\t\t\t\tafter useBlocks";
@@ -153,12 +153,12 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
      * This method shifts the block pointer to the block that might contain given ID and returns the max block contribution.
      */
     dist_t NextShallow(IdType doc_id) {
-      while ((*blocks_)[block_idx_].last_id < doc_id ) {
+      while (blocks_[block_idx_]->last_id < doc_id ) {
         if (block_idx_ >= last_block_idx_) {
           throw std::length_error("the end of list");
         }
         block_idx_ ++;
-        blk_max_qval_ = (*blocks_)[block_idx_].max_val * PostListQueryStateWAND::qval_;
+        blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
       }
       return blk_max_qval_;
     }
@@ -173,7 +173,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
   int block_size_;
 
   // list of records with information about individual blocks
-  vector<BlockInfo> blocks_;
+  vector<BlockInfo *> blocks_;
 
 
 private:
