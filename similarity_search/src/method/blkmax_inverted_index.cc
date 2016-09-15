@@ -51,7 +51,8 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   size_t wordQty = 0;
   // query term index
   int32_t qsi = 0;
-  // initialize queryStates and postListQueue variables
+  // initialize queryStates and postListQueue variable
+  try {
   for (auto eQuery : query_vect) {
     auto it = SimplInvIndex<dist_t>::index_.find(eQuery.id_);
     if (it != SimplInvIndex<dist_t>::index_.end()) { // There may be out-of-vocabulary words
@@ -68,6 +69,9 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       postListQueue.push(-queryStates[qsi]->doc_id_, qsi);
     }
     ++qsi;
+  }
+  } catch (const std::exception &e) {
+    LOG(LIB_INFO) << "\tinit phase threw exception: " << e.what();
   }
 
   // While some people expect the result set to always contain at least k entries,
@@ -205,8 +209,6 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   }
   } catch (const std::exception &e) {
     LOG(LIB_INFO) << "\t\t\tthe processing threw exception: " << e.what();
-  } catch (...) {
-    LOG(LIB_INFO) << " catching something";
   }
 }
 
