@@ -32,6 +32,7 @@ using namespace std;
 
 template <typename dist_t>
 void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
+  try {
   LOG(LIB_INFO) << "Starting new kNN query";
   // the query vector, its size is the number of query terms (non-zero dimensions of the query vector)
   vector<SparseVectElem<dist_t>>    query_vect;
@@ -198,6 +199,9 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
 #endif
     tmpResQueue.pop();
   }
+  } catch (const std::exception &e) {
+    LOG(LIB_INFO) << "\t\t\tNext() generated exception: " << e.what();
+  }   
 }
 
 template <typename dist_t>
