@@ -231,7 +231,7 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
 
   LOG(LIB_INFO) << "creating blocks";
   for (const auto& dictEntry : SimplInvIndex<dist_t>::index_) {
-    vector<BlockInfo * > blocks = *new vector<BlockInfo * >();
+    vector<BlockInfo * > * blocks = new vector<BlockInfo * >();
     string entryString = "list " + to_string(dictEntry.first) + " [";
     string blockString = "[";
     unsigned qty = dictEntry.second->qty_;
@@ -245,21 +245,21 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
       entryString += "(" + to_string(entries[i].doc_id_) + " " + to_string(entries[i].val_) + ") ";
       // if we are ending a block
       if ((i + 1) % block_size_ == 0) {
-        blocks.push_back(new BlockInfo(entries[i].doc_id_, termMax));
+        blocks->push_back(new BlockInfo(entries[i].doc_id_, termMax));
         termMax = 0;
         entryString += "], [";
-        blockString += to_string(blocks[blocks.size() - 1]->last_id) + " " + to_string(blocks[blocks.size() - 1]->max_val) + "], [";
+        blockString += to_string((*blocks)[blocks->size() - 1]->last_id) + " " + to_string((*blocks)[blocks->size() - 1]->max_val) + "], [";
       }
     }
     // the last block
     if (qty % block_size_ != 0) {
-      blocks.push_back(new BlockInfo(entries[qty - 1].doc_id_, termMax));
-      blockString += to_string(blocks[blocks.size() - 1]->last_id) + " " + to_string(blocks[blocks.size() - 1]->max_val) + "]";
+      blocks->push_back(new BlockInfo(entries[qty - 1].doc_id_, termMax));
+      blockString += to_string((*blocks)[blocks->size() - 1]->last_id) + " " + to_string((*blocks)[blocks->size() - 1]->max_val) + "]";
     }
     LOG(LIB_INFO) << entryString;
     LOG(LIB_INFO) << blockString;
 
-    blocks_map_.insert(make_pair(dictEntry.first, unique_ptr<vector<BlockInfo * >>( & blocks)));
+    blocks_map_.insert(make_pair(dictEntry.first, unique_ptr<vector<BlockInfo * >>(blocks)));
   }
 }
 
