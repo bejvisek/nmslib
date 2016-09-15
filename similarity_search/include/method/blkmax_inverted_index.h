@@ -130,6 +130,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
         throw new std::length_error("the end of list");
       }
       doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
+      LOG(LIB_INFO) << "\t\t\tNext() is shifting to position " << PostListQueryStateWAND::post_pos_ << " and doc_id " << doc_id;
       return doc_id_ == min_doc_id;
     }
 
