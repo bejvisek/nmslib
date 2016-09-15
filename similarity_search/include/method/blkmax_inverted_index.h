@@ -113,27 +113,27 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
      *  assumes that the block_idx is already set alright
      */
     bool Next(IdType min_doc_id, const bool useBlocks) {
-      LOG(LIB_INFO) << "\t\t\t\tstarting Next";
+//      LOG(LIB_INFO) << "\t\t\t\tstarting Next";
       if (doc_id_ == min_doc_id)
         return true;
 
       if (useBlocks) {
         while (blocks_[block_idx_]->last_id < min_doc_id) {
           if (block_idx_ >= last_block_idx_) {
-            LOG(LIB_INFO) << " throwing length_error in block++";
+//            LOG(LIB_INFO) << " throwing length_error in block++";
             throw std::length_error("the end of list");
           }
           block_idx_++;
           blk_max_qval_ = blocks_[block_idx_]->max_val * PostListQueryStateWAND::qval_;
         }
       }
-      LOG(LIB_INFO) << "\t\t\t\t\tafter useBlocks";
+//      LOG(LIB_INFO) << "\t\t\t\t\tafter useBlocks";
 
       size_t block_beginning = block_size_ * block_idx_;
       if (block_beginning > PostListQueryStateWAND::post_pos_) {
         PostListQueryStateWAND::post_pos_ = block_beginning;
         if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
-          LOG(LIB_INFO) << " throwing length_error in post_post++";
+//          LOG(LIB_INFO) << " throwing length_error in post_post++";
           throw std::length_error("the end of list");
         }
       }
@@ -141,14 +141,14 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
              ++PostListQueryStateWAND::post_pos_ < PostListQueryStateWAND::post_->qty_) {
         //post_pos_ ++;
       }
-      LOG(LIB_INFO) << "\t\t\t\t\tafter post_pos++";
+//      LOG(LIB_INFO) << "\t\t\t\t\tafter post_pos++";
       if (PostListQueryStateWAND::post_pos_ >= PostListQueryStateWAND::post_->qty_) {
-        LOG(LIB_INFO) << " throwing length_error in post_post++";
+//        LOG(LIB_INFO) << " throwing length_error in post_post++";
         throw std::length_error("the end of list");
       }
       doc_id_ = PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].doc_id_;
-      LOG(LIB_INFO) << "\t\t\tNext() is shifting to position " << PostListQueryStateWAND::post_pos_ <<
-      " and doc_id " << doc_id_;
+//      LOG(LIB_INFO) << "\t\t\tNext() is shifting to position " << PostListQueryStateWAND::post_pos_ <<
+//      " and doc_id " << doc_id_;
       return doc_id_ == min_doc_id;
     }
 
@@ -166,10 +166,10 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
       // sanity check
       if (Next(doc_id, false)) {
         if (GetCurrentQueryVal() > blk_max_qval_) {
-          LOG(LIB_INFO) << "ERROR: " << "query term id: " << queryTermId_ << ": query-multiplied value of doc_id " << doc_id << " on position " << PostListQueryStateWAND::post_pos_ << " is "
-              << PostListQueryStateWAND::qval_ << " * " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].val_ << " = "  << GetCurrentQueryVal() << ", but max of "
-              << block_idx_ << "th block (" << blocks_[block_idx_]->last_id << ") is "
-              << PostListQueryStateWAND::qval_ << " * " << blocks_[block_idx_]->max_val << " = " << blk_max_qval_;
+//          LOG(LIB_INFO) << "ERROR: " << "query term id: " << queryTermId_ << ": query-multiplied value of doc_id " << doc_id << " on position " << PostListQueryStateWAND::post_pos_ << " is "
+//              << PostListQueryStateWAND::qval_ << " * " << PostListQueryStateWAND::post_->entries_[PostListQueryStateWAND::post_pos_].val_ << " = "  << GetCurrentQueryVal() << ", but max of "
+//              << block_idx_ << "th block (" << blocks_[block_idx_]->last_id << ") is "
+//              << PostListQueryStateWAND::qval_ << " * " << blocks_[block_idx_]->max_val << " = " << blk_max_qval_;
         }
       }
 

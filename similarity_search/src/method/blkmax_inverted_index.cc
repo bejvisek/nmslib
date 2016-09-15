@@ -33,7 +33,7 @@ using namespace std;
 template <typename dist_t>
 void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   try {
-  LOG(LIB_INFO) << "Starting new kNN query";
+//  LOG(LIB_INFO) << "Starting new kNN query";
   // the query vector, its size is the number of query terms (non-zero dimensions of the query vector)
   vector<SparseVectElem<dist_t>>    query_vect;
   const Object* o = query->QueryObject();
@@ -52,7 +52,6 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   // query term index
   int32_t qsi = 0;
   // initialize queryStates and postListQueue variable
-  try {
   for (auto eQuery : query_vect) {
     auto it = SimplInvIndex<dist_t>::index_.find(eQuery.id_);
     if (it != SimplInvIndex<dist_t>::index_.end()) { // There may be out-of-vocabulary words
@@ -65,21 +64,13 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       // initialize the queryStates[query_term_index]  to the first position in the posting list WAND
       dist_t maxContrib = eQuery.val_ * WandInvIndex<dist_t>::max_contributions_.find(eQuery.id_)->second;
 
-      try {
-        vector<BlockInfo *> & blocks_ = *(blocks_map_.find(eQuery.id_)->second);
-        LOG(LIB_INFO) << "\t\tOK finding block vector for " << eQuery.id_ ;
-        queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_, eQuery.id_));
-      } catch (const std::exception &e) {
-        LOG(LIB_INFO) << "\t\tfinding block vector for " << eQuery.id_ << "failed: " << e.what();
-      }
+      vector<BlockInfo *> & blocks_ = *(blocks_map_.find(eQuery.id_)->second);
+      queryStates[qsi].reset(new PostListQueryStateBlock(pl, eQuery.val_, maxContrib, block_size_, blocks_, eQuery.id_));
 
       // initialize the postListQueue to the first position - insert pair (-doc_id, query_term_index)
       postListQueue.push(-queryStates[qsi]->doc_id_, qsi);
     }
     ++qsi;
-  }
-  } catch (const std::exception &e) {
-    LOG(LIB_INFO) << "\tinit phase threw exception: " << e.what();
   }
 
   // While some people expect the result set to always contain at least k entries,
@@ -102,7 +93,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
   int pivotIdx = 0;
   IdType pivot_doc_id_neg = 1;
 
-  LOG(LIB_INFO) << "\tinitialization OK, # of query terms " << wordQty;
+//  LOG(LIB_INFO) << "\tinitialization OK, # of query terms " << wordQty;
   while (!postListQueue.empty()) {
     // find the WAND-like pivot (in case of having IDs like (3, 5, 7, 7, 8) and in case sum of max
     string top_id_str = "(";
@@ -114,8 +105,8 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
       top_id_str += to_string(- pivot_doc_id_neg) + ", ";
     }
     IdType pivot_doc_id = -pivot_doc_id_neg;
-    LOG(LIB_INFO) << "\ttop doc_ids: " << top_id_str << "  " << (postListQueue.empty() ? "" : to_string(- postListQueue.top_key()))
-        << "), " << "\tpivot index " << pivotIdx << ", pivot doc id " << pivot_doc_id;
+//    LOG(LIB_INFO) << "\ttop doc_ids: " << top_id_str << "  " << (postListQueue.empty() ? "" : to_string(- postListQueue.top_key()))
+//        << "), " << "\tpivot index " << pivotIdx << ", pivot doc id " << pivot_doc_id;
 
     // shift blocks, if necessary, and calculate max_block_contribution
     bool someListEnded = false;
@@ -125,7 +116,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
         max_block_contrib_accum += queryState.NextShallow(pivot_doc_id);
       } catch (const std::length_error &e) {
         // if the shallow next reaches the end of the posting list, do not contribute to the accumulation
-        LOG(LIB_INFO) << "\tsome list ended";
+//        LOG(LIB_INFO) << "\tsome list ended";
         someListEnded = true;
       }
     }
@@ -146,21 +137,21 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
           }
         } catch (const std::length_error &e) {
           // skip the post list that ended
-          LOG(LIB_INFO) << "\t\tNextShallow throws exception";
+//          LOG(LIB_INFO) << "\t\tNextShallow throws exception";
         }
       }
-      LOG(LIB_INFO) << "\t\tjust shifting pointers to: " << new_doc_id;
+//      LOG(LIB_INFO) << "\t\tjust shifting pointers to: " << new_doc_id;
       // shift pointers to the next id and re-insert them into the queue
       for (int i = 0; i < pivotIdx; ++i) {
-        LOG(LIB_INFO) << "\t\t\tlowest_doc_indexes[i]: " << lowest_doc_indexes[i];
-        LOG(LIB_INFO) << "\t\t\tqueryStates[lowest_doc_indexes[i]] - is null: " << (queryStates[lowest_doc_indexes[i]] == NULL);
+//        LOG(LIB_INFO) << "\t\t\tlowest_doc_indexes[i]: " << lowest_doc_indexes[i];
+//        LOG(LIB_INFO) << "\t\t\tqueryStates[lowest_doc_indexes[i]] - is null: " << (queryStates[lowest_doc_indexes[i]] == NULL);
         PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
         try {
           queryState.Next(new_doc_id, true);
           postListQueue.push(-queryState.doc_id_, lowest_doc_indexes[i]);
         } catch (const std::length_error &e) {
           // if the shallow next reaches the end of the posting list, do not reinsert this list into the queue
-          LOG(LIB_INFO) << "\t\tNext throws exception";
+//          LOG(LIB_INFO) << "\t\tNext throws exception";
         }
       }
     } else { // we check the actual values
@@ -177,7 +168,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
           }
         } catch (const std::length_error &e) {
           // if the shallow next reaches the end of the posting list, do not reinsert this list into the queue
-          LOG(LIB_INFO) << "\t\tNext throws exception";
+//          LOG(LIB_INFO) << "\t\tNext throws exception";
         }
       }
 
@@ -198,10 +189,10 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
     max_block_contrib_accum = 0;
     pivotIdx = 0;
     pivot_doc_id_neg = 1;
-    LOG(LIB_INFO) << "\t\tEnd of loop, size of post list queue: " << postListQueue.size();
+//    LOG(LIB_INFO) << "\t\tEnd of loop, size of post list queue: " << postListQueue.size();
   }
 
-  LOG(LIB_INFO) << "\tOut of the main loop";
+//  LOG(LIB_INFO) << "\tOut of the main loop";
   while (!tmpResQueue.empty()) {
 #ifdef SANITY_CHECKS
     CHECK(tmpResQueue.top_data() >= 0);
@@ -232,32 +223,31 @@ void BlockMaxInvIndex<dist_t>::CreateIndex(const AnyParams& IndexParams) {
   LOG(LIB_INFO) << "creating blocks";
   for (const auto& dictEntry : SimplInvIndex<dist_t>::index_) {
     vector<BlockInfo * > * blocks = new vector<BlockInfo * >();
-    string entryString = "list " + to_string(dictEntry.first) + " [";
-    string blockString = "[";
+//    string entryString = "list " + to_string(dictEntry.first) + " [";
+//    string blockString = "[";
     unsigned qty = dictEntry.second->qty_;
     PostEntry * entries = dictEntry.second->entries_;
     dist_t termMax = 0;
-    //IdType lastId = 0;
     for (int i = 0; i < qty; ++i) {
       if (termMax < entries[i].val_) {
         termMax = entries[i].val_;
       }
-      entryString += "(" + to_string(entries[i].doc_id_) + " " + to_string(entries[i].val_) + ") ";
+//      entryString += "(" + to_string(entries[i].doc_id_) + " " + to_string(entries[i].val_) + ") ";
       // if we are ending a block
       if ((i + 1) % block_size_ == 0) {
         blocks->push_back(new BlockInfo(entries[i].doc_id_, termMax));
         termMax = 0;
-        entryString += "], [";
-        blockString += to_string((*blocks)[blocks->size() - 1]->last_id) + " " + to_string((*blocks)[blocks->size() - 1]->max_val) + "], [";
+//        entryString += "], [";
+//        blockString += to_string((*blocks)[blocks->size() - 1]->last_id) + " " + to_string((*blocks)[blocks->size() - 1]->max_val) + "], [";
       }
     }
     // the last block
     if (qty % block_size_ != 0) {
       blocks->push_back(new BlockInfo(entries[qty - 1].doc_id_, termMax));
-      blockString += to_string((*blocks)[blocks->size() - 1]->last_id) + " " + to_string((*blocks)[blocks->size() - 1]->max_val) + "]";
+//      blockString += to_string((*blocks)[blocks->size() - 1]->last_id) + " " + to_string((*blocks)[blocks->size() - 1]->max_val) + "]";
     }
-    LOG(LIB_INFO) << entryString;
-    LOG(LIB_INFO) << blockString;
+//    LOG(LIB_INFO) << entryString;
+//    LOG(LIB_INFO) << blockString;
 
     blocks_map_.insert(make_pair(dictEntry.first, unique_ptr<vector<BlockInfo * >>(blocks)));
   }
