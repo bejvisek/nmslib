@@ -107,6 +107,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
      *  assumes that the block_idx is already set alright
      */
     bool Next(IdType min_doc_id, const bool useBlocks) {
+      LOG(LIB_INFO) << "\t\t\t\tstarting Next";
       if (doc_id_ == min_doc_id)
         return true;
 
