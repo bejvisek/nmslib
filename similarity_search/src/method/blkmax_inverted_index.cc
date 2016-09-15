@@ -110,7 +110,7 @@ void BlockMaxInvIndex<dist_t>::Search(KNNQuery<dist_t>* query, IdType) const {
     for (int i = 0; i < pivotIdx; ++i) {
       try {
         PostListQueryStateBlock &queryState = *queryStates[lowest_doc_indexes[i]];
-        max_block_contrib_accum += queryState.NextShallow(pivot_doc_id) * queryState.qval_;
+        max_block_contrib_accum += queryState.NextShallow(pivot_doc_id);
       } catch (const std::length_error &e) {
         // if the shallow next reaches the end of the posting list, do not contribute to the accumulation
         LOG(LIB_INFO) << "\tsome list ended";

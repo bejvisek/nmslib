@@ -80,6 +80,8 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
     const vector<BlockInfo> * blocks_;
     // number of blocks - 1
     const int last_block_idx_;
+    // precomputed product of block_max and query_val
+    dist_t blk_max_qval_;
 
     PostListQueryStateBlock(const PostList& pl, const dist_t qval, const dist_t max_term_contr, const int block_size, const vector<BlockInfo> & blocks)
         : PostListQueryStateWAND(pl, qval, max_term_contr),
@@ -88,6 +90,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
           block_size_(block_size),
           last_block_idx_(blocks.size() - 1) {
       doc_id_ = pl.entries_[PostListQueryStateWAND::post_pos_].doc_id_;
+      blk_max_qval_ = (*blocks_)[block_idx_].max_val * qval_;
     }
 
     /**
@@ -118,6 +121,7 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
             throw std::length_error("the end of list");
           }
           block_idx_++;
+          blk_max_qval_ = (*blocks_)[block_idx_].max_val * qval_;
         }
       }
       LOG(LIB_INFO) << "\t\t\t\t\tafter useBlocks";
@@ -154,8 +158,9 @@ class BlockMaxInvIndex : public WandInvIndex<dist_t> {
           throw std::length_error("the end of list");
         }
         block_idx_ ++;
+        blk_max_qval_ = (*blocks_)[block_idx_].max_val * qval_;
       }
-      return (*blocks_)[block_idx_].max_val;
+      return blk_max_qval_;
     }
 
     dist_t GetCurrentQueryVal() const {
