@@ -38,6 +38,8 @@ def update_dfs(record):
 counter = 0
 for record in readbindata.read_records(args):
     update_dfs(record)
+    if counter % 1000 == 0:
+        print >> sys.stderr, "processed ", counter, " objects"
     counter += 1
 
 output.write(str(dict(dfs)))
@@ -46,10 +48,10 @@ output.write(str(dict(dfs)))
 if args.output:
     output.close()
 
-if args.output:
-    # try to read the data in again
-    dfs_dict = eval(open(args.output, 'r').read())
-    print >> sys.stderr, str(dfs_dict)
+#if args.output:
+#    # try to read the data in again
+#    dfs_dict = eval(open(args.output, 'r').read())
+#    print >> sys.stderr, str(dfs_dict)
 
 
 print >> sys.stderr, "processed ", counter, " objects"
