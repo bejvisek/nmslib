@@ -21,11 +21,7 @@ def lengths(length_file):
     length_stream = open(length_file, 'rb')
     while True:
         try:
-            retval = struct.unpack('i', length_stream.read(4))[0]
-            if retval and retval is not '':
-                yield retval
-            else:
-                break
+            yield struct.unpack('i', length_stream.read(4))[0]
         except Exception:
             break
 
