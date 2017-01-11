@@ -41,5 +41,8 @@ def read_records(args):
         counter += 1
 
 
-
+recs = [(3, 3, 3, 1, 2), (4,3,2), (18, 9, 27, 2)]
+def read_records_test(args):
+    for rec in recs:
+        yield rec
 
