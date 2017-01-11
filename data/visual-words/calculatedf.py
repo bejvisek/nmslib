@@ -44,9 +44,9 @@ def update_dfs(record):
 counter = 0
 for record in readbindata.read_records(args):
     update_dfs(record)
+    counter += 1
     if counter % 1000 == 0:
         print >> sys.stderr, "processed ", counter, " objects"
-    counter += 1
 
 output.write(str(dict(dfs)))
 

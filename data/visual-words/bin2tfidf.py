@@ -65,6 +65,8 @@ counter = 0
 for record in readbindata.read_records(args):
     print_vector(raw2tfidf(record))
     counter += 1
+    if counter % 1000 == 0:
+        print >> sys.stderr, "processed ", counter, " objects"
 
 
 if args.output:
