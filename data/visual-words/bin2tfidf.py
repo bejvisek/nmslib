@@ -36,7 +36,7 @@ for key, value in df_dict.items():
 
 
 def print_vector(tfidf_vector):
-    output.write(', '.join([str(key) + ': ' + str(value) for (key, value) in tfidf_vector]))
+    output.write(' '.join([str(key) + ':' + "{0:.5f}".format(value) for (key, value) in tfidf_vector]))
     output.write('\n')
 
 
