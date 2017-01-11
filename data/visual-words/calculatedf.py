@@ -31,7 +31,13 @@ dfs = Counter()
 
 
 def update_dfs(record):
-    for i in record:
+    """
+    Updates the document frequency dictionary. Each term must be counted only once per record
+    :type record: tuple
+    :param record: a list of terms in the document
+    :return: nothing
+    """
+    for i in frozenset(record):
         dfs[i] += 1
 
 
